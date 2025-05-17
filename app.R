@@ -43,7 +43,6 @@ user_base <- data.frame(
 #Sys.setlocale("LC_CTYPE", "ukrainian")
 #questions <- read.csv2(file = "questions.txt",header = TRUE, sep = ";")
 
-options( warn = -1 )
 
 questions <- data.frame(
   question = c( 
@@ -367,7 +366,7 @@ background-color:#4e5d6c;
        
        use_shiny_title(),
        #shinysurveys::teaching_r_questions
-       shinysurveys::surveyOutput(df = questions,
+       shinysurveys::surveyOutput(df = shinysurveys::teaching_r_questions,
                                   survey_title = div(img(src="accordbank.svg", height = 35, width = 35), "Опитування"),
                                   survey_description = 'ЩОДО КОМУНІКАЦІЇ З ПІДРОЗДІЛАМИ ГБ',theme = "#7B1818",),
        
@@ -575,7 +574,7 @@ server <- function(input, output, session) {
                           #"You can customize what actions happen when a user finishes a survey using input$submit."
     ))
     
-    print(input$q11)
+
     print("clicked save!!!")
     
     #ssql <- "INSERT INTO questionare (division, PIB, q11ker, q12ker, q13ker, q21ker, q22ker, q23ker, q31ker, q32ker, q33ker, q41ker, q42ker, q43ker) "
