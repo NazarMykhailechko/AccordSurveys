@@ -53,9 +53,9 @@
 52;If yes, approximately how many data analyses have you completed?;5 to 10;mc;number_completed_data_analysis;completed_data_analysis;Yes;TRUE;1;
 53;If yes, approximately how many data analyses have you completed?;10 to 15;mc;number_completed_data_analysis;completed_data_analysis;Yes;TRUE;1;
 54;If yes, approximately how many data analyses have you completed?;15+;mc;number_completed_data_analysis;completed_data_analysis;Yes;TRUE;1;
-55;" ""I love sushi.""";Disagree;matrix;matId;NA;NA;TRUE;1;
-56;" ""I love sushi.""";Neutral;matrix;matId;NA;NA;TRUE;1;
-57;" ""I love sushi.""";Agree;matrix;matId;NA;NA;TRUE;1;
-58;" ""I love chocolate.""";Disagree;matrix;matId;NA;NA;TRUE;1;
-59;" ""I love chocolate.""";Neutral;matrix;matId;NA;NA;TRUE;1;
-60;" ""I love chocolate.""";Agree;matrix;matId;NA;NA;TRUE;1;
+55;" ""I love sushi.""";Disagree;matrix;matId;NA;NA;T;1;
+56;" ""I love sushi.""";Neutral;matrix;matId;NA;NA;T;1;
+57;" ""I love sushi.""";Agree;matrix;matId;NA;NA;T;1;
+58;" ""I love chocolate.""";Disagree;matrix;matId;NA;NA;T;1;
+59;" ""I love chocolate.""";Neutral;matrix;matId;NA;NA;T;1;
+60;" ""I love chocolate.""";Agree;matrix;matId;NA;NA;T;1;
