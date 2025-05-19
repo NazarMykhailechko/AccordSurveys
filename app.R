@@ -376,6 +376,8 @@ background-color:#4e5d6c;
            
             dataTableOutput("count_surveys"),
             br(),
+            dataTableOutput("count_last"),
+            br(),
             textOutput("text1", container = span),
 
             dataTableOutput("results1"),
@@ -540,6 +542,9 @@ margin-bottom: 10.5px;font-size: 20px;} ")),
        tags$body(tags$style("#DataTables_Table_2_wrapper {background-color:#4e5d6c;color: white;width: 70%}")),
        tags$body(tags$style("#DataTables_Table_2 td {background-color:#4e5d6c;color: white;font-family: arial;}")),
        tags$body(tags$style("#DataTables_Table_2 th {background-color:#4e5d6c;color: white;font-family: arial}")),
+       tags$body(tags$style("#DataTables_Table_3_wrapper {background-color:#4e5d6c;color: white;width: 70%}")),
+       tags$body(tags$style("#DataTables_Table_3 td {background-color:#4e5d6c;color: white;font-family: arial;}")),
+       tags$body(tags$style("#DataTables_Table_3 th {background-color:#4e5d6c;color: white;font-family: arial}")),
        tags$body(tags$style("#text1 {color:white;font-family: arial;font-size:10px;width: 70%}")),
        tags$body(tags$style("#text2 {color:whine;font-family: arial;font-size:10px;width: 70%}")),
        #tags$body(tags$style("p #survey-description {font-size: 15px;}")),
@@ -706,7 +711,7 @@ server <- function(input, output, session) {
         data1 <- data1 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, date) %>%
           summarise(mean = mean(as.double(response))) %>%
           spread(date, mean)
-        data1 <- data1 %>% rename("Підрозділ Головного Банку" = "question_id")
+        data1 <- data1 %>% rename("Підрозділ Головного Банку" = "question_id") %>% mutate(across(where(is.numeric), round, 1))
         
         return(data1)
       })
@@ -719,7 +724,7 @@ server <- function(input, output, session) {
         data2 <- data2 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, date) %>%
           summarise(mean = mean(as.double(response))) %>%
           spread(date, mean)
-        data2 <- data2 %>% rename("Підрозділ Головного Банку" = "question_id")
+        data2 <- data2 %>% rename("Підрозділ Головного Банку" = "question_id") %>% mutate(across(where(is.numeric), round, 1))
         
         return(data2)
       })
@@ -737,6 +742,24 @@ server <- function(input, output, session) {
         data3 <- data3 %>% rename(" " = "count_surveys")
         
         return(data3)
+      })
+      
+      data4 <- reactive({
+        
+        
+        data4 = dbGetQuery(pool, paste0("SELECT * from (SELECT question_id, response, q, date, (case when (response = 'не було комунікації') THEN 'не було комунікацій' ELSE 'оцінювався' END) as res, (case when (q = 'q11') THEN 'питання 1' ELSE 'питання 2' END) as question, concat(QUARTER(date), year(date)) as quarter from results) as Q
+where quarter in (select max(concat(QUARTER(date), year(date))) as quarter from results)"))
+        
+        
+        data4 <- data4 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, question, res) %>%
+          summarise(count = n()) %>%
+          spread(res, count)
+        data4 <- data4 %>% rename("Підрозділ Головного Банку" = "question_id")
+        data4 <- data4 %>% rename("Питання" = "question")
+        
+        data4[is.na(data4)] <- 0
+        
+        return(data4)
       })
 
       output$results1 <- renderDataTable({
@@ -795,6 +818,32 @@ server <- function(input, output, session) {
         #selectize-input items full has-options has-items
         datatable(
           isolate(data3()),
+          rownames = FALSE,
+          options = list(
+            #lengthMenu = list(c(10, 25, 50, 100), c("10","25","50", "100")),
+            #buttons = c('copy', 'csv', 'excel', 'pdf', 'print', 'colvis'),
+            #buttons = c('excel'),
+            pageLength = -1,
+            paging = FALSE,
+            searching = FALSE,
+            info = FALSE,
+            sort = TRUE,
+            highlight = TRUE,
+            borderless = FALSE,
+            striped = FALSE,
+            compact = TRUE,
+            wrap = FALSE,
+            resizable = FALSE,
+            columnDefs = (list(list(width = '100px', targets =c(0)))) 
+          ),
+          
+        )}
+      )
+      
+      output$count_last <- renderDataTable({
+        #selectize-input items full has-options has-items
+        datatable(
+          isolate(data4()),
           rownames = FALSE,
           options = list(
             #lengthMenu = list(c(10, 25, 50, 100), c("10","25","50", "100")),
