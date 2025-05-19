@@ -35,13 +35,13 @@ user_base <- data.frame(
 )
 
 
-  pool <- pool::dbPool(
-  drv = RMySQL::MySQL(),
-  dbname = "accordsurveys",
-  host = "127.0.0.1",
-  username = "root",
-  password = "WIN72007@NAZAr"
- )
+#  pool <- pool::dbPool(
+#  drv = RMySQL::MySQL(),
+#  dbname = "accordsurveys",
+#  host = "127.0.0.1",
+#  username = "root",
+#  password = "WIN72007@NAZAr"
+# )
 
 #pool <- pool::dbPool(
 #  drv = RMySQL::MySQL(),
@@ -621,9 +621,9 @@ server <- function(input, output, session) {
       
       ssql <- "INSERT INTO results (question_id, response, q, date) "
 
-      for(i in 1:nrow(final_data)) {
-        data <- DBI::dbGetQuery(pool,  paste0(ssql,"VALUES('", final_data$question_id[i],"','", final_data$response[i],"','", final_data$q[i], "','", final_data$date[i],"')"))
-      }
+      #for(i in 1:nrow(final_data)) {
+      #  data <- DBI::dbGetQuery(pool,  paste0(ssql,"VALUES('", final_data$question_id[i],"','", final_data$response[i],"','", final_data$q[i], "','", final_data$date[i],"')"))
+      #}
       
       
       
