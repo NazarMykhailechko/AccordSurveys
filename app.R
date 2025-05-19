@@ -388,7 +388,7 @@ background-color:#4e5d6c;
        #shinysurveys::teaching_r_questions
        shinysurveys::surveyOutput(df = questions,
                                   survey_title = div(img(src="accordbank.svg", height = 35, width = 35), "Опитування"),
-                                  survey_description = 'ЩОДО КОМУНІКАЦІЇ З ПІДРОЗДІЛАМИ ГБ',theme = "#7B1818",),
+                                  survey_description = paste0('ЩОДО КОМУНІКАЦІЇ З ПІДРОЗДІЛАМИ ГБ ',gsub("Q1","в 1 кварталі",paste(quarters(floor_date(Sys.Date(), "quarter")-1),format(floor_date(Sys.Date(), "quarter")-1,"%Y")))),theme = "#7B1818",),
        
        useShinyjs(),
        tags$head(
@@ -440,14 +440,14 @@ background-color:#4e5d6c;
               var iDiv1111 = document.createElement('div');
               iDiv1111.id = 'q11xxx';
               document.getElementById('q11-question').appendChild(iDiv1111);
-              document.getElementById('q11xxx').innerText = `Оцініть від 1 (дуже негативно) до 10 (дуже позитивно), на скільки відповідальні особи підрозділу ГБ сприяють вирішеню питань/проблем відділення в межах своїх посадових обов'язків  (оперативність, якість допомоги, тощо), при зверенні працівників Вашого відділення?`;
+              document.getElementById('q11xxx').innerText = `1. Оцініть від 1 (дуже негативно) до 10 (дуже позитивно), на скільки ПРАЦІВНИКИ підрозділу ГБ сприяють вирішенню питань/проблем відділення в межах своїх посадових обов'язків (оперативність, якість допомоги, тощо), при зверненні працівників Вашого відділення?`;
               document.getElementById('q11').before(iDiv1111);
               iDiv1111.setAttribute('style', 'text-align: center;margin: 2px;font-size: 1.0rem;font-weight: bold;color:#D22B2B');      
 
               var iDiv2222 = document.createElement('div');
               iDiv2222.id = 'q12xxx';
               document.getElementById('q12-question').appendChild(iDiv2222);
-              document.getElementById('q12xxx').innerText = `Оцініть від 1 (дуже негативно) до 10 (дуже позитивно), на скільки КЕРІВНИК підрозділу ГБ, при звернені працівників відділення безпосередньо до нього, сприяє вирішеню питань/проблем відділення в межах своїх посадових обов'язків (оперативність, якість допомоги, тощо)?`;
+              document.getElementById('q12xxx').innerText = `2. Оцініть від 1 (дуже негативно) до 10 (дуже позитивно), на скільки КЕРІВНИК підрозділу ГБ, при звернені працівників відділення безпосередньо до нього, сприяє вирішенню питань/проблем відділення в межах своїх посадових обов'язків (оперативність, якість допомоги, тощо)?`;
               document.getElementById('q12').before(iDiv2222);
               iDiv2222.setAttribute('style', 'text-align: center;margin: 2px;font-size: 1.0rem;font-weight: bold;color:#D22B2B');
       
