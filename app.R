@@ -396,7 +396,7 @@ background-color:#4e5d6c;
        #shinysurveys::teaching_r_questions
        shinysurveys::surveyOutput(df = questions,
                                   survey_title = div(img(src="accordbank.svg", height = 35, width = 35), "Опитування"),
-                                  survey_description = paste0('ЩОДО КОМУНІКАЦІЇ З ПІДРОЗДІЛАМИ ГБ ',gsub("Q1","в 1 кварталі",paste(quarters(floor_date(Sys.Date(), "quarter")-1),format(floor_date(Sys.Date(), "quarter")-1,"%Y")))),theme = "#7B1818",),
+                                  survey_description = paste0('ЩОДО КОМУНІКАЦІЇ З ПІДРОЗДІЛАМИ ГБ за минулий місяць'),theme = "#7B1818",),
        
        useShinyjs(),
        tags$head(
@@ -640,7 +640,7 @@ server <- function(input, output, session) {
       
       final_data <- subset(final_data, select = -question_type)
       
-      #print(final_data)
+      print(final_data)
       
       ssql <- "INSERT INTO results (question_id, response, q, date) "
 
@@ -705,12 +705,13 @@ server <- function(input, output, session) {
       
       data1 <- reactive({
         
-        data1 = dbGetQuery(pool, paste0("SELECT * from results where q in ('q11') and response not in ('не було комунікації')"))
+        data1 = dbGetQuery(pool, paste0("SELECT replace(replace(question_id, SUBSTRING_INDEX(question_id,'_', -2), concat('(', SUBSTRING_INDEX(question_id,'_', -2), ')')),'_',' ') as question_id, response, q, date, DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') as dates from results where q in ('q11') and response not in ('не було комунікації')"))
         
         
-        data1 <- data1 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, date) %>%
+        #data1 <- data1 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, date) %>%
+        data1 <- data1 %>% group_by(question_id, dates) %>%
           summarise(mean = mean(as.double(response))) %>%
-          spread(date, mean)
+          spread(dates, mean)
         data1 <- data1 %>% rename("Підрозділ Головного Банку" = "question_id") %>% mutate(across(where(is.numeric), round, 1))
         
         return(data1)
@@ -718,14 +719,16 @@ server <- function(input, output, session) {
       
       data2 <- reactive({
         
-        data2 = dbGetQuery(pool, paste0("SELECT * from results where q in ('q12') and response not in ('не було комунікації')"))
+        data2 = dbGetQuery(pool, paste0("SELECT replace(replace(question_id, SUBSTRING_INDEX(question_id,'_', -2), concat('(', SUBSTRING_INDEX(question_id,'_', -2), ')')),'_',' ') as question_id, response, q, date, DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') as dates from results where q in ('q12') and response not in ('не було комунікації')"))
         
-
-        data2 <- data2 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, date) %>%
+        
+        #data1 <- data1 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, date) %>%
+        data2 <- data2 %>% group_by(question_id, dates) %>%
           summarise(mean = mean(as.double(response))) %>%
-          spread(date, mean)
+          spread(dates, mean)
         data2 <- data2 %>% rename("Підрозділ Головного Банку" = "question_id") %>% mutate(across(where(is.numeric), round, 1))
         
+       
         return(data2)
       })
       
@@ -733,12 +736,13 @@ server <- function(input, output, session) {
       data3 <- reactive({
         
         
-        data3 = dbGetQuery(pool, paste0("SELECT 'Кількість отриманих анкет' as count_surveys, date from results"))
+        data3 = dbGetQuery(pool, paste0("SELECT 'Кількість отриманих анкет' as count_surveys, DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') as dates from results"))
         
         
-        data3 <- data3 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(count_surveys, date) %>%
+        #data3 <- data3 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(count_surveys, date) %>%
+        data3 <- data3 %>% group_by(count_surveys, dates) %>%
           summarise(count = n()/38) %>%
-          spread(date, count)
+          spread(dates, count)
         data3 <- data3 %>% rename(" " = "count_surveys")
         
         return(data3)
@@ -747,11 +751,12 @@ server <- function(input, output, session) {
       data4 <- reactive({
         
         
-        data4 = dbGetQuery(pool, paste0("SELECT * from (SELECT question_id, response, q, date, (case when (response = 'не було комунікації') THEN 'не було комунікацій' ELSE 'оцінювався' END) as res, (case when (q = 'q11') THEN 'питання 1' ELSE 'питання 2' END) as question, concat(QUARTER(date), year(date)) as quarter from results) as Q
-where quarter in (select max(concat(QUARTER(date), year(date))) as quarter from results)"))
+        data4 = dbGetQuery(pool, paste0("SELECT * from (SELECT replace(replace(question_id, SUBSTRING_INDEX(question_id,'_', -2), concat('(', SUBSTRING_INDEX(question_id,'_', -2), ')')),'_',' ') as question_id, response, q, date, (case when (response = 'не було комунікації') THEN 'не було комунікацій' ELSE 'оцінювався' END) as res, (case when (q = 'q11') THEN 'питання 1' ELSE 'питання 2' END) as question, DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') as dates from results) as Q
+where dates in (select max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) as dates from results)"))
         
         
-        data4 <- data4 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, question, res) %>%
+        #data4 <- data4 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, question, res) %>%
+        data4 <- data4 %>% group_by(question_id, question, res) %>%
           summarise(count = n()) %>%
           spread(res, count)
         data4 <- data4 %>% rename("Підрозділ Головного Банку" = "question_id")
