@@ -22,6 +22,7 @@ library(pool)
 library(DBI)
 library(dplyr)
 library(tidyr)
+library(lubridate)
 
 
 user_base <- data.frame(
@@ -34,6 +35,26 @@ user_base <- data.frame(
 )
 
 
+  pool <- pool::dbPool(
+  drv = RMySQL::MySQL(),
+  dbname = "accordsurveys",
+  host = "127.0.0.1",
+  username = "root",
+  password = "WIN72007@NAZAr"
+ )
+
+#pool <- pool::dbPool(
+#  drv = RMySQL::MySQL(),
+#  dbname = "heroku_623d565686a87a4",
+#  host = "eu-cluster-west-01.k8s.cleardb.net",
+#  username = "bc6a3dad916b4a",
+#  password = "0c7f407f"
+#)
+
+onStop(function() {
+  print("POOL CLOSED!!!!!!!!!!!!!")
+  poolClose(pool)
+})
 
 
 
@@ -67,27 +88,25 @@ questions <- data.frame(
     rep("Фінансово-економічний департамент (Балун Д.Л.)",11),
     rep("Юридичний департамент (Булгаков П.А.)",11),
     
-    rep("Адміністративно-господарське управління (Ревуцький В.В. )",11),
-    rep("Департамент банкнотного бізнесу (Комашко О.Л. )",11),
-    rep("Департамент безпеки (Ткачук І.В. )",11),
-    rep("Департамент валютного нагляду (Лосенко Р.П. )",11),
-    rep("Департамент інформаційних технологій (Семенцул Є.В. )",11),
-    rep("Департамент казначейських операцій (Єфремов Ю.В. )",11),
-    rep("Департамент корпоративного бізнесу (Клевацький Д.С. )",11),
-    rep("Департамент маркетингу (Кривоус І.А. )",11),
-    rep("Департамент ризик-менеджементу (Войтків М.В. )",11),
-    rep("Департамент розвитку картк. бізнесу та спожив. кредит. (Кутас О.В. )",11),
-    rep("Департамент розвитку неторгових операцій (Музика А.І. )",11),
-    rep("Департамент розвитку регіональної мережі (Олійник І.А. )",11),
-    rep("Департамент розвитку розрах. опер. та депозит. продук. (Ткачук Л.О. )",11),
-    rep("Кредитний департамент (Голеня О.Є. )",11),
-    rep("Операційний департамент (Баклаєва В.О. )",11),
-    rep("Управління по роботі з персоналом (Кирилішина Т.В. )",11),
-    rep("Управління фінансового моніторингу (Черняк В.В. )",11),
-    rep("Фінансово-економічний департамент (Балун Д.Л. )",11),
-    rep("Юридичний департамент (Булгаков П.А. )",11),
-    
-    rep("Якщо оцінка нижче 3-х балів включно, напишіть короткий коментар проблеми комунікації", 1)
+    rep("Адміністративно-господарське управління (Ревуцький В.В.) ",11),
+    rep("Департамент банкнотного бізнесу (Комашко О.Л.) ",11),
+    rep("Департамент безпеки (Ткачук І.В.) ",11),
+    rep("Департамент валютного нагляду (Лосенко Р.П.) ",11),
+    rep("Департамент інформаційних технологій (Семенцул Є.В.) ",11),
+    rep("Департамент казначейських операцій (Єфремов Ю.В.) ",11),
+    rep("Департамент корпоративного бізнесу (Клевацький Д.С.) ",11),
+    rep("Департамент маркетингу (Кривоус І.А.) ",11),
+    rep("Департамент ризик-менеджементу (Войтків М.В.) ",11),
+    rep("Департамент розвитку картк. бізнесу та спожив. кредит. (Кутас О.В.) ",11),
+    rep("Департамент розвитку неторгових операцій (Музика А.І.) ",11),
+    rep("Департамент розвитку регіональної мережі (Олійник І.А.) ",11),
+    rep("Департамент розвитку розрах. опер. та депозит. продук. (Ткачук Л.О.) ",11),
+    rep("Кредитний департамент (Голеня О.Є.) ",11),
+    rep("Операційний департамент (Баклаєва В.О.) ",11),
+    rep("Управління по роботі з персоналом (Кирилішина Т.В.) ",11),
+    rep("Управління фінансового моніторингу (Черняк В.В.) ",11),
+    rep("Фінансово-економічний департамент (Балун Д.Л.) ",11),
+    rep("Юридичний департамент (Булгаков П.А.) ",11)
   ),
   
   option = option <- c(
@@ -128,16 +147,16 @@ questions <- data.frame(
     "не було комунікації",	"1",	"2",	"3",	"4",	"5",	"6",	"7",	"8",	"9",	"10",
     "не було комунікації",	"1",	"2",	"3",	"4",	"5",	"6",	"7",	"8",	"9",	"10",
     "не було комунікації",	"1",	"2",	"3",	"4",	"5",	"6",	"7",	"8",	"9",	"10",
-    "не було комунікації",	"1",	"2",	"3",	"4",	"5",	"6",	"7",	"8",	"9",	"10","Напишіть коментар"),
+    "не було комунікації",	"1",	"2",	"3",	"4",	"5",	"6",	"7",	"8",	"9",	"10"),
   
   
   # For matrix questions, the IDs should be the same for each question
   # but different for each matrix input unit
-  input_type = c(rep("matrix", 418),rep("text", 1)),
-  input_id = c(rep("q11", 209),rep("q12", 209),rep("comment", 1)),
+  input_type = c(rep("matrix", 418)),
+  input_id = c(rep("q11", 209),rep("q12", 209)),
   dependence = NA,
   dependence_value = NA,
-  required = c(rep(FALSE, 418),rep(FALSE, 1))
+  required = c(rep(FALSE, 418))
   #page = c(rep(1, 214), rep(2, 54), rep(3, 54), rep(4, 54))
 )
 
@@ -428,7 +447,7 @@ background-color:#4e5d6c;
               var iDiv2222 = document.createElement('div');
               iDiv2222.id = 'q12xxx';
               document.getElementById('q12-question').appendChild(iDiv2222);
-              document.getElementById('q12xxx').innerText = `Оцініть від 1 (дуже негативно) до 10 (дуже позитивно), на скільки керівник підрозділу ГБ, при звернені працівників відділення безпосередньо до нього, сприяє вирішеню питань/проблем відділення в межах своїх посадових обов'язків (оперативність, якість допомоги, тощо)?`;
+              document.getElementById('q12xxx').innerText = `Оцініть від 1 (дуже негативно) до 10 (дуже позитивно), на скільки КЕРІВНИК підрозділу ГБ, при звернені працівників відділення безпосередньо до нього, сприяє вирішеню питань/проблем відділення в межах своїх посадових обов'язків (оперативність, якість допомоги, тощо)?`;
               document.getElementById('q12').before(iDiv2222);
               iDiv2222.setAttribute('style', 'text-align: center;margin: 2px;font-size: 1.0rem;font-weight: bold;color:#D22B2B');
       
@@ -571,13 +590,11 @@ server <- function(input, output, session) {
   observeEvent(input$submit, {
     
 
-    
-    print(any(c(1,2,3) %in% unlist(as.data.frame(input$q11[,3]))))
-    print(as.data.frame(input$q11[,3]))
-    print(input$comment)
+ 
+
 
     
-    if (is.null(input$q11)) {
+    if (is.null(input$q11) || is.null(input$q12)) {
       print("Не всі поля заповнені!!!!!!")
       showModal(modalDialog(footer = NULL,easyClose = T,
                             title = "Ви не проставили всі оцінки! Будь ласка перевірте всі питання!"))
@@ -586,31 +603,48 @@ server <- function(input, output, session) {
                             title = "Ваші відповіді надіслано! Дякуємо за участь в опитуванні!",
                             #"You can customize what actions happen when a user finishes a survey using input$submit."
       ))
+      
+      q11 <- as.data.frame(input$q11)
+      q11$q <- c(rep("q11",19))
+      
+      q12 <- as.data.frame(input$q12)
+      q12$question_id <- substr(q12$question_id, 1, nchar(q12$question_id)-1)
+      q12$q <- c(rep("q12",19))
+      
+      
+      final_data <- bind_rows(q11, q12)
+      final_data$date <- Sys.Date()
+      
+      final_data <- subset(final_data, select = -question_type)
+      
+      #print(final_data)
+      
+      ssql <- "INSERT INTO results (question_id, response, q, date) "
+
+      for(i in 1:nrow(final_data)) {
+        data <- DBI::dbGetQuery(pool,  paste0(ssql,"VALUES('", final_data$question_id[i],"','", final_data$response[i],"','", final_data$q[i], "','", final_data$date[i],"')"))
+      }
+      
+      
+      
+      
+      #print(paste0(ssql,"VALUES('", final_data$question_id,"','", final_data$response,"','", final_data$q, "','", final_data$date,"')"))
     }
     
-    if(any(c(1,2,3) %in% unlist(as.data.frame(input$q11[,3]))) == TRUE && input$comment == ""){
-      showModal(modalDialog(footer = NULL,easyClose = T,
-                            title = "Ви проставили оцінку від 1-3 балів! Будь ласка залиште свій коментар!"))
-    }
+    #if(any(c(1,2,3) %in% unlist(as.data.frame(input$q11[,3]))) == TRUE && input$comment == ""){
+    #  showModal(modalDialog(footer = NULL,easyClose = T,
+     #                       title = "Ви проставили оцінку від 1-3 балів! Будь ласка залиште свій коментар!"))
+    #}
     
-    if (is.null(input$q12)) {
-      print("Не всі поля заповнені!!!!!!")
-      showModal(modalDialog(footer = NULL,easyClose = T,
-                            title = "Ви не проставили всі оцінки! Будь ласка перевірте всі питання!"))
-    }else{
-      showModal(modalDialog(footer = NULL,
-                            title = "Ваші відповіді надіслано! Дякуємо за участь в опитуванні!",
-                            #"You can customize what actions happen when a user finishes a survey using input$submit."
-      ))
-    }
-    
-    if(any(c(1,2,3) %in% unlist(as.data.frame(input$q12[,3]))) == TRUE && input$comment == ""){
-      showModal(modalDialog(footer = NULL,easyClose = T,
-                            title = "Ви проставили оцінку від 1-3 балів! Будь ласка залиште свій коментар!"))
-    }
+
+    #if(any(c(1,2,3) %in% unlist(as.data.frame(input$q12[,3]))) == TRUE && input$comment == ""){
+    #  showModal(modalDialog(footer = NULL,easyClose = T,
+    #                        title = "Ви проставили оцінку від 1-3 балів! Будь ласка залиште свій коментар!"))
+    #}
     
     print("clicked save!!!")
     
+
     #ssql <- "INSERT INTO questionare (division, PIB, q11ker, q12ker, q13ker, q21ker, q22ker, q23ker, q31ker, q32ker, q33ker, q41ker, q42ker, q43ker) "
     
     
@@ -627,7 +661,7 @@ server <- function(input, output, session) {
     #                                      "','", input$q42[1,3],
     #                                      "','", input$q43[1,3],"')"))
     #showNotification("Ваші відповіді надіслано! Дякуємо за участь в опитуванні!",duration = 4,closeButton = FALSE, type = "error",id = "info")
-    #print(getSurveyData())
+
     
     
   })

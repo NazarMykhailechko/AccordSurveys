@@ -1,0 +1,15 @@
+use accordsurveys;
+CREATE TABLE results (
+    question_id varchar(255) NOT NULL,
+    response varchar(20) NOT NULL,  
+    q varchar(5) NOT NULL,  
+    date DATE NOT NULL    
+);
+
+SELECT question_id, AVG(response) AS AVG_Rank FROM results 
+where q in ('q11') and response not in ('не було комунікації')
+group by question_id;
+
+SET SQL_SAFE_UPDATES = 0;
+delete FROM accordsurveys.results;
+
