@@ -13,3 +13,7 @@ group by question_id;
 SET SQL_SAFE_UPDATES = 0;
 delete FROM accordsurveys.results;
 
+SELECT table_schema "accordsurveys",
+        ROUND(SUM(data_length + index_length) / 1024 / 1024, 1) "DB Size in MB"
+FROM information_schema.tables
+GROUP BY table_schema;

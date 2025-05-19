@@ -23,6 +23,7 @@ library(DBI)
 library(dplyr)
 library(tidyr)
 library(lubridate)
+library(DT)
 
 
 user_base <- data.frame(
@@ -35,21 +36,21 @@ user_base <- data.frame(
 )
 
 
-#  pool <- pool::dbPool(
-#  drv = RMySQL::MySQL(),
-#  dbname = "accordsurveys",
-#  host = "127.0.0.1",
-#  username = "root",
-#  password = "WIN72007@NAZAr"
-# )
+  #pool <- pool::dbPool(
+  #drv = RMySQL::MySQL(),
+  #dbname = "accordsurveys",
+  #host = "127.0.0.1",
+  #username = "root",
+  #password = "WIN72007@NAZAr"
+ #)
 
-#pool <- pool::dbPool(
-#  drv = RMySQL::MySQL(),
-#  dbname = "heroku_623d565686a87a4",
-#  host = "eu-cluster-west-01.k8s.cleardb.net",
-#  username = "bc6a3dad916b4a",
-#  password = "0c7f407f"
-#)
+pool <- pool::dbPool(
+  drv = RMySQL::MySQL(),
+  dbname = "a9pt7elh5dx2d96q",
+  host = "fojvtycq53b2f2kx.chr7pe7iynqr.eu-west-1.rds.amazonaws.com",
+  username = "azpnhhninzjx64pg",
+  password = "uh8bfx0wuu4c44e5"
+)
 
 onStop(function() {
   print("POOL CLOSED!!!!!!!!!!!!!")
@@ -362,23 +363,28 @@ background-color:#4e5d6c;
   theme = shinytheme("superhero"), #flatly, journal, lumen, readable, simplex, superhero, united, yeti
   
   div( id = "display_content",
-       # Application title
-       titlePanel("Old Faithful Geyser Data"),
        
-       # Sidebar with a slider input for number of bins 
-       sidebarLayout(
-         sidebarPanel(
-           sliderInput("bins",
-                       "Number of bins:",
-                       min = 1,
-                       max = 50,
-                       value = 30)
-         ),
+       fluidPage(
+
+       # App title ----
+       #titlePanel("Результати опитування відділень Банку"),
+       titlePanel(tags$div(tags$img(src="accordbank.svg", height = 50, width = 50),"Результати опитування відділень Банку")),
          
-         # Show a plot of the generated distribution
+         # Main panel for displaying outputs ----
          mainPanel(
-           plotOutput("distPlot")
+           
+           
+            dataTableOutput("count_surveys"),
+            br(),
+            textOutput("text1", container = span),
+
+            dataTableOutput("results1"),
+            br(),
+            textOutput("text2", container = span),
+            dataTableOutput("results2")
+           
          )
+         
        )
   ) %>% shinyjs::hidden(),
   
@@ -524,6 +530,18 @@ margin-bottom: 10.5px;font-size: 20px;} ")),
        tags$head(tags$style(".modal-title {background-color:white;}")),
        tags$head(tags$style(".modal-header {background-color:white;}")),
        tags$head(tags$style("div #myfooter p {color: white;}")),
+       
+       tags$body(tags$style("#DataTables_Table_0_wrapper {background-color:#4e5d6c;color: white;width: 70%}")),
+       tags$body(tags$style("#DataTables_Table_0 td {background-color:#4e5d6c;color: white;font-family: arial;}")),
+       tags$body(tags$style("#DataTables_Table_0 th {background-color:#4e5d6c;color: white;font-family: arial}")),
+       tags$body(tags$style("#DataTables_Table_1_wrapper {background-color:#4e5d6c;color: white;width: 70%}")),
+       tags$body(tags$style("#DataTables_Table_1 td {background-color:#4e5d6c;color: white;font-family: arial;}")),
+       tags$body(tags$style("#DataTables_Table_1 th {background-color:#4e5d6c;color: white;font-family: arial}")),
+       tags$body(tags$style("#DataTables_Table_2_wrapper {background-color:#4e5d6c;color: white;width: 70%}")),
+       tags$body(tags$style("#DataTables_Table_2 td {background-color:#4e5d6c;color: white;font-family: arial;}")),
+       tags$body(tags$style("#DataTables_Table_2 th {background-color:#4e5d6c;color: white;font-family: arial}")),
+       tags$body(tags$style("#text1 {color:white;font-family: arial;font-size:10px;width: 70%}")),
+       tags$body(tags$style("#text2 {color:whine;font-family: arial;font-size:10px;width: 70%}")),
        #tags$body(tags$style("p #survey-description {font-size: 15px;}")),
        
        
@@ -621,9 +639,9 @@ server <- function(input, output, session) {
       
       ssql <- "INSERT INTO results (question_id, response, q, date) "
 
-      #for(i in 1:nrow(final_data)) {
-      #  data <- DBI::dbGetQuery(pool,  paste0(ssql,"VALUES('", final_data$question_id[i],"','", final_data$response[i],"','", final_data$q[i], "','", final_data$date[i],"')"))
-      #}
+      for(i in 1:nrow(final_data)) {
+        data <- DBI::dbGetQuery(pool,  paste0(ssql,"VALUES('", final_data$question_id[i],"','", final_data$response[i],"','", final_data$q[i], "','", final_data$date[i],"')"))
+      }
       
       
       
@@ -671,7 +689,133 @@ server <- function(input, output, session) {
     req(credentials()$user_auth)
     if (user_data()$user == "tops"){
       
+      output$text1 <- renderText({
+        "1. Оцініть від 1 (дуже негативно) до 10 (дуже позитивно), на скільки ПРАЦІВНИКИ підрозділу ГБ сприяють вирішенню питань/проблем відділення в межах своїх посадових обов'язків (оперативність, якість допомоги, тощо), при зверненні працівників Вашого відділення?"
+      })
       
+      output$text2 <- renderText({
+        "2. Оцініть від 1 (дуже негативно) до 10 (дуже позитивно), на скільки КЕРІВНИК підрозділу ГБ, при звернені працівників відділення безпосередньо до нього, сприяє вирішенню питань/проблем відділення в межах своїх посадових обов'язків (оперативність, якість допомоги, тощо)?"
+      })
+      
+      
+      data1 <- reactive({
+        
+        data1 = dbGetQuery(pool, paste0("SELECT * from results where q in ('q11') and response not in ('не було комунікації')"))
+        
+        
+        data1 <- data1 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, date) %>%
+          summarise(mean = mean(as.double(response))) %>%
+          spread(date, mean)
+        data1 <- data1 %>% rename("Підрозділ Головного Банку" = "question_id")
+        
+        return(data1)
+      })
+      
+      data2 <- reactive({
+        
+        data2 = dbGetQuery(pool, paste0("SELECT * from results where q in ('q12') and response not in ('не було комунікації')"))
+        
+
+        data2 <- data2 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(question_id, date) %>%
+          summarise(mean = mean(as.double(response))) %>%
+          spread(date, mean)
+        data2 <- data2 %>% rename("Підрозділ Головного Банку" = "question_id")
+        
+        return(data2)
+      })
+      
+      
+      data3 <- reactive({
+        
+        
+        data3 = dbGetQuery(pool, paste0("SELECT 'Кількість отриманих анкет' as count_surveys, date from results"))
+        
+        
+        data3 <- data3 %>% mutate(date = paste(quarters(floor_date(as.Date(date), "quarter")-1),format(floor_date(as.Date(date), "quarter")-1,"%Y"))) %>% group_by(count_surveys, date) %>%
+          summarise(count = n()/38) %>%
+          spread(date, count)
+        data3 <- data3 %>% rename(" " = "count_surveys")
+        
+        return(data3)
+      })
+
+      output$results1 <- renderDataTable({
+        #selectize-input items full has-options has-items
+        datatable(
+          isolate(data1()),
+          rownames = FALSE,
+          options = list(
+          #lengthMenu = list(c(10, 25, 50, 100), c("10","25","50", "100")),
+          #buttons = c('copy', 'csv', 'excel', 'pdf', 'print', 'colvis'),
+          #buttons = c('excel'),
+          pageLength = -1,
+          paging = FALSE,
+          searching = FALSE,
+          info = FALSE,
+          sort = TRUE,
+          highlight = TRUE,
+          borderless = FALSE,
+          striped = FALSE,
+          compact = TRUE,
+          wrap = FALSE,
+          resizable = FALSE,
+          columnDefs = (list(list(width = '100px', targets =c(0)))) 
+          ),
+          
+        )}
+      )
+      
+      output$results2 <- renderDataTable({
+        #selectize-input items full has-options has-items
+        datatable(
+          isolate(data2()),
+          rownames = FALSE,
+          options = list(
+            #lengthMenu = list(c(10, 25, 50, 100), c("10","25","50", "100")),
+            #buttons = c('copy', 'csv', 'excel', 'pdf', 'print', 'colvis'),
+            #buttons = c('excel'),
+            pageLength = -1,
+            paging = FALSE,
+            searching = FALSE,
+            info = FALSE,
+            sort = TRUE,
+            highlight = TRUE,
+            borderless = FALSE,
+            striped = FALSE,
+            compact = TRUE,
+            wrap = FALSE,
+            resizable = FALSE,
+            columnDefs = (list(list(width = '100px', targets =c(0)))) 
+          ),
+          
+        )}
+      )
+          
+      output$count_surveys <- renderDataTable({
+        #selectize-input items full has-options has-items
+        datatable(
+          isolate(data3()),
+          rownames = FALSE,
+          options = list(
+            #lengthMenu = list(c(10, 25, 50, 100), c("10","25","50", "100")),
+            #buttons = c('copy', 'csv', 'excel', 'pdf', 'print', 'colvis'),
+            #buttons = c('excel'),
+            pageLength = -1,
+            paging = FALSE,
+            searching = FALSE,
+            info = FALSE,
+            sort = TRUE,
+            highlight = TRUE,
+            borderless = FALSE,
+            striped = FALSE,
+            compact = TRUE,
+            wrap = FALSE,
+            resizable = FALSE,
+            columnDefs = (list(list(width = '100px', targets =c(0)))) 
+          ),
+          
+        )}
+      )
       
     }
     else{
