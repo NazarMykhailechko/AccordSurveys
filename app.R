@@ -374,6 +374,12 @@ background-color:#4e5d6c;
          mainPanel(
            
            
+            h5(textOutput("text3", container = span)),
+            br(),
+            dataTableOutput("total_stat1"),
+            br(),
+            dataTableOutput("total_stat2"),
+            br(),
             dataTableOutput("count_surveys"),
             br(),
             dataTableOutput("count_last"),
@@ -545,8 +551,15 @@ margin-bottom: 10.5px;font-size: 20px;} ")),
        tags$body(tags$style("#DataTables_Table_3_wrapper {background-color:#4e5d6c;color: white;width: 70%}")),
        tags$body(tags$style("#DataTables_Table_3 td {background-color:#4e5d6c;color: white;font-family: arial;}")),
        tags$body(tags$style("#DataTables_Table_3 th {background-color:#4e5d6c;color: white;font-family: arial}")),
+       tags$body(tags$style("#DataTables_Table_4_wrapper {background-color:#4e5d6c;color: white;width: 130%}")),
+       tags$body(tags$style("#DataTables_Table_4 td {background-color:#4e5d6c;color: white;font-family: arial;}")),
+       tags$body(tags$style("#DataTables_Table_4 th {background-color:#4e5d6c;color: white;font-family: arial}")),
+       tags$body(tags$style("#DataTables_Table_5_wrapper {background-color:#4e5d6c;color: white;width: 130%}")),
+       tags$body(tags$style("#DataTables_Table_5 td {background-color:#4e5d6c;color: white;font-family: arial;}")),
+       tags$body(tags$style("#DataTables_Table_5 th {background-color:#4e5d6c;color: white;font-family: arial}")),
        tags$body(tags$style("#text1 {color:white;font-family: arial;font-size:10px;width: 70%}")),
-       tags$body(tags$style("#text2 {color:whine;font-family: arial;font-size:10px;width: 70%}")),
+       tags$body(tags$style("#text2 {color:white;font-family: arial;font-size:10px;width: 70%}")),
+       tags$body(tags$style("#text3 {color:white;font-family: arial;width: 70%}")),
        #tags$body(tags$style("p #survey-description {font-size: 15px;}")),
        
        
@@ -702,6 +715,12 @@ server <- function(input, output, session) {
         "2. Оцініть від 1 (дуже негативно) до 10 (дуже позитивно), на скільки КЕРІВНИК підрозділу ГБ, при звернені працівників відділення безпосередньо до нього, сприяє вирішенню питань/проблем відділення в межах своїх посадових обов'язків (оперативність, якість допомоги, тощо)?"
       })
       
+      output$text3 <- renderText({
+        
+        as.character(dbGetQuery(pool, paste0("SELECT replace(concat('Оцінка підрозділів ГБ зі сторони мережі відділень на ', max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')),' (', round(count(*)/38,0), ' анкети)'),'-','.') FROM results")))
+        
+      })
+      
       
       data1 <- reactive({
         
@@ -712,6 +731,7 @@ server <- function(input, output, session) {
         data1 <- data1 %>% group_by(question_id, dates) %>%
           summarise(mean = mean(as.double(response))) %>%
           spread(dates, mean)
+
         data1 <- data1 %>% rename("Підрозділ Головного Банку" = "question_id") %>% mutate(across(where(is.numeric), round, 1))
         
         return(data1)
@@ -767,6 +787,162 @@ where dates in (select max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) as 
         return(data4)
       })
 
+      data5 <- reactive({
+        
+        
+        data5 = dbGetQuery(pool, paste0("
+                                        
+                                        Select * from (SELECT replace(replace(question_id, SUBSTRING_INDEX(question_id,'_', -2), concat('(', SUBSTRING_INDEX(question_id,'_', -2), ')')),'_',' ') as 'Оцінка ПРАЦІВНИКІВ підрозділу головного офісу', round(sum(case when response = 'не було комунікації' then 0 else response end) / count(case when response <> 'не було комунікації' then  response end),1) as 'середній бал',
+concat(round((count(case when response in(1,2,3,4,5) then response end) / count(case when response <> 'не було комунікації' then  response end))*100,0),'%') as 'Частка оцінок нижче 5 балів включно',
+count(case when response <> 'не було комунікації' then  response end) as 'К-ть зарахованих оцінок',
+concat(round((count(case when response <> 'не було комунікації' then  response end) / count(response))*100,0),'%') as 'Частка зарахованих  оцінок від всіх голосувань',
+  count((CASE response WHEN 1 THEN response ELSE NULL END)) AS '1',
+  count((CASE response WHEN 2 THEN response ELSE NULL END)) AS '2',
+  count((CASE response WHEN 3 THEN response ELSE NULL END)) AS '3',
+  count((CASE response WHEN 4 THEN response ELSE NULL END)) AS '4',
+  count((CASE response WHEN 5 THEN response ELSE NULL END)) AS '5',
+  count((CASE response WHEN 6 THEN response ELSE NULL END)) AS '6',
+  count((CASE response WHEN 7 THEN response ELSE NULL END)) AS '7',
+  count((CASE response WHEN 8 THEN response ELSE NULL END)) AS '8',
+  count((CASE response WHEN 9 THEN response ELSE NULL END)) AS '9',
+  count((CASE response WHEN 10 THEN response ELSE NULL END)) AS '10',
+  count((CASE response WHEN 'не було комунікації' THEN response ELSE NULL END)) AS 'не було комунікації'
+FROM results 
+where q = 'q11' and DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') in (SELECT max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) FROM results)
+GROUP BY question_id
+Order by 2
+) AS Q
+
+union all
+
+SELECT 'К-ть оцінок в цілому' as 'К-ть оцінок в цілому', round(sum(case when response = 'не було комунікації' then 0 else response end) / count(case when response <> 'не було комунікації' then  response end),1) as total_avg_rank,
+concat(round((count(case when response in(1,2,3,4,5) then response end) / count(case when response <> 'не було комунікації' then  response end))*100,0),'%') as 'Частка оцінок нижче 5 балів включно',
+count(case when response <> 'не було комунікації' then  response end) as 'К-ть зарахованих оцінок',
+concat(round((count(case when response <> 'не було комунікації' then  response end) / count(response))*100,0),'%') as 'Частка зарахованих  оцінок від всіх голосувань',
+  count((CASE response WHEN 1 THEN response ELSE NULL END)) AS '1',
+  count((CASE response WHEN 2 THEN response ELSE NULL END)) AS '2',
+  count((CASE response WHEN 3 THEN response ELSE NULL END)) AS '3',
+  count((CASE response WHEN 4 THEN response ELSE NULL END)) AS '4',
+  count((CASE response WHEN 5 THEN response ELSE NULL END)) AS '5',
+  count((CASE response WHEN 6 THEN response ELSE NULL END)) AS '6',
+  count((CASE response WHEN 7 THEN response ELSE NULL END)) AS '7',
+  count((CASE response WHEN 8 THEN response ELSE NULL END)) AS '8',
+  count((CASE response WHEN 9 THEN response ELSE NULL END)) AS '9',
+  count((CASE response WHEN 10 THEN response ELSE NULL END)) AS '10',
+  count((CASE response WHEN 'не було комунікації' THEN response ELSE NULL END)) AS 'не було комунікації'
+FROM results 
+where q = 'q11' and DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') in (SELECT max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) FROM results)
+GROUP BY 'К-ть оцінок в цілому'
+                                        
+                                        "))
+        
+        return(data5)
+      })
+        
+        data6 <- reactive({
+          
+          
+          data6 = dbGetQuery(pool, paste0("select * from (SELECT replace(replace(question_id, SUBSTRING_INDEX(question_id,'_', -2), concat('(', SUBSTRING_INDEX(question_id,'_', -2), ')')),'_',' ') as 'Оцінка КЕРІВНИКА підрозділу головного офісу', round(sum(case when response = 'не було комунікації' then 0 else response end) / count(case when response <> 'не було комунікації' then  response end),1) as 'середній бал',
+concat(round((count(case when response in(1,2,3,4,5) then response end) / count(case when response <> 'не було комунікації' then  response end))*100,0),'%') as 'Частка оцінок нижче 5 балів включно',
+count(case when response <> 'не було комунікації' then  response end) as 'К-ть зарахованих оцінок',
+concat(round((count(case when response <> 'не було комунікації' then  response end) / count(response))*100,0),'%') as 'Частка зарахованих  оцінок від всіх голосувань',
+  count((CASE response WHEN 1 THEN response ELSE NULL END)) AS '1',
+  count((CASE response WHEN 2 THEN response ELSE NULL END)) AS '2',
+  count((CASE response WHEN 3 THEN response ELSE NULL END)) AS '3',
+  count((CASE response WHEN 4 THEN response ELSE NULL END)) AS '4',
+  count((CASE response WHEN 5 THEN response ELSE NULL END)) AS '5',
+  count((CASE response WHEN 6 THEN response ELSE NULL END)) AS '6',
+  count((CASE response WHEN 7 THEN response ELSE NULL END)) AS '7',
+  count((CASE response WHEN 8 THEN response ELSE NULL END)) AS '8',
+  count((CASE response WHEN 9 THEN response ELSE NULL END)) AS '9',
+  count((CASE response WHEN 10 THEN response ELSE NULL END)) AS '10',
+  count((CASE response WHEN 'не було комунікації' THEN response ELSE NULL END)) AS 'не було комунікації'
+FROM results 
+where q = 'q12' and DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') in (SELECT max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) FROM results)
+GROUP BY question_id
+order by 2
+) as Q
+
+union all
+
+SELECT 'К-ть оцінок в цілому' as 'К-ть оцінок в цілому', round(sum(case when response = 'не було комунікації' then 0 else response end) / count(case when response <> 'не було комунікації' then  response end),1) as total_avg_rank,
+concat(round((count(case when response in(1,2,3,4,5) then response end) / count(case when response <> 'не було комунікації' then  response end))*100,0),'%') as 'Частка оцінок нижче 5 балів включно',
+count(case when response <> 'не було комунікації' then  response end) as 'К-ть зарахованих оцінок',
+concat(round((count(case when response <> 'не було комунікації' then  response end) / count(response))*100,0),'%') as 'Частка зарахованих  оцінок від всіх голосувань',
+  count((CASE response WHEN 1 THEN response ELSE NULL END)) AS '1',
+  count((CASE response WHEN 2 THEN response ELSE NULL END)) AS '2',
+  count((CASE response WHEN 3 THEN response ELSE NULL END)) AS '3',
+  count((CASE response WHEN 4 THEN response ELSE NULL END)) AS '4',
+  count((CASE response WHEN 5 THEN response ELSE NULL END)) AS '5',
+  count((CASE response WHEN 6 THEN response ELSE NULL END)) AS '6',
+  count((CASE response WHEN 7 THEN response ELSE NULL END)) AS '7',
+  count((CASE response WHEN 8 THEN response ELSE NULL END)) AS '8',
+  count((CASE response WHEN 9 THEN response ELSE NULL END)) AS '9',
+  count((CASE response WHEN 10 THEN response ELSE NULL END)) AS '10',
+  count((CASE response WHEN 'не було комунікації' THEN response ELSE NULL END)) AS 'не було комунікації'
+FROM results 
+where q = 'q12' and DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') in (SELECT max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) FROM results)
+GROUP BY 'К-ть оцінок в цілому'
+
+"))
+        
+        
+
+        return(data6)
+      })
+      
+      output$total_stat1 <- renderDataTable({
+        #selectize-input items full has-options has-items
+        datatable(
+          isolate(data5()),
+          rownames = FALSE,
+          options = list(
+            #lengthMenu = list(c(10, 25, 50, 100), c("10","25","50", "100")),
+            #buttons = c('copy', 'csv', 'excel', 'pdf', 'print', 'colvis'),
+            #buttons = c('excel'),
+            pageLength = -1,
+            paging = FALSE,
+            searching = FALSE,
+            info = FALSE,
+            sort = TRUE,
+            highlight = TRUE,
+            borderless = FALSE,
+            striped = FALSE,
+            compact = TRUE,
+            wrap = FALSE,
+            resizable = FALSE,
+            columnDefs = (list(list(width = '50px', targets =c(1,2,3,4,15)))) 
+          ),
+          
+        )}
+      )
+      
+      output$total_stat2 <- renderDataTable({
+        #selectize-input items full has-options has-items
+        datatable(
+          isolate(data6()),
+          rownames = FALSE,
+          options = list(
+            #lengthMenu = list(c(10, 25, 50, 100), c("10","25","50", "100")),
+            #buttons = c('copy', 'csv', 'excel', 'pdf', 'print', 'colvis'),
+            #buttons = c('excel'),
+            pageLength = -1,
+            paging = FALSE,
+            searching = FALSE,
+            info = FALSE,
+            sort = TRUE,
+            highlight = TRUE,
+            borderless = FALSE,
+            striped = FALSE,
+            compact = TRUE,
+            wrap = FALSE,
+            resizable = FALSE,
+            columnDefs = (list(list(width = '50px', targets =c(1,2,3,4,15)))) 
+          ),
+          
+        )}
+      )
+      
       output$results1 <- renderDataTable({
         #selectize-input items full has-options has-items
         datatable(

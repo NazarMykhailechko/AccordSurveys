@@ -13,7 +13,96 @@ group by question_id;
 SET SQL_SAFE_UPDATES = 0;
 delete FROM accordsurveys.results;
 
-SELECT table_schema "accordsurveys",
-        ROUND(SUM(data_length + index_length) / 1024 / 1024, 1) "DB Size in MB"
-FROM information_schema.tables
+SELECT table_schema AS "Database", 
+ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS "Size (MB)" 
+FROM information_schema.TABLES 
 GROUP BY table_schema;
+
+__________________________________________________
+
+Select * from (SELECT replace(replace(question_id, SUBSTRING_INDEX(question_id,'_', -2), concat('(', SUBSTRING_INDEX(question_id,'_', -2), ')')),'_',' ') as 'Оцінка ПРАЦІВНИКІВ підрозділу головного офісу', round(sum(case when response = 'не було комунікації' then 0 else response end) / count(case when response <> 'не було комунікації' then  response end),1) as 'середній бал',
+concat(round((count(case when response in(1,2,3,4,5) then response end) / count(case when response <> 'не було комунікації' then  response end))*100,0),'%') as 'Частка оцінок нижче 5 балів включно',
+count(case when response <> 'не було комунікації' then  response end) as 'К-ть зарахованих оцінок',
+concat(round((count(case when response <> 'не було комунікації' then  response end) / count(response))*100,0),'%') as 'Частка зарахованих  оцінок від всіх голосувань',
+  count((CASE response WHEN 1 THEN response ELSE NULL END)) AS '1',
+  count((CASE response WHEN 2 THEN response ELSE NULL END)) AS '2',
+  count((CASE response WHEN 3 THEN response ELSE NULL END)) AS '3',
+  count((CASE response WHEN 4 THEN response ELSE NULL END)) AS '4',
+  count((CASE response WHEN 5 THEN response ELSE NULL END)) AS '5',
+  count((CASE response WHEN 6 THEN response ELSE NULL END)) AS '6',
+  count((CASE response WHEN 7 THEN response ELSE NULL END)) AS '7',
+  count((CASE response WHEN 8 THEN response ELSE NULL END)) AS '8',
+  count((CASE response WHEN 9 THEN response ELSE NULL END)) AS '9',
+  count((CASE response WHEN 10 THEN response ELSE NULL END)) AS '10',
+  count((CASE response WHEN 'не було комунікації' THEN response ELSE NULL END)) AS 'не було комунікації'
+FROM results 
+where q = 'q11' and DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') in (SELECT max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) FROM results)
+GROUP BY question_id
+Order by 2
+) AS Q
+
+union all
+
+SELECT 'К-ть оцінок в цілому' as 'К-ть оцінок в цілому', round(sum(case when response = 'не було комунікації' then 0 else response end) / count(case when response <> 'не було комунікації' then  response end),1) as total_avg_rank,
+concat(round((count(case when response in(1,2,3,4,5) then response end) / count(case when response <> 'не було комунікації' then  response end))*100,0),'%') as 'Частка оцінок нижче 5 балів включно',
+count(case when response <> 'не було комунікації' then  response end) as 'К-ть зарахованих оцінок',
+concat(round((count(case when response <> 'не було комунікації' then  response end) / count(response))*100,0),'%') as 'Частка зарахованих  оцінок від всіх голосувань',
+  count((CASE response WHEN 1 THEN response ELSE NULL END)) AS '1',
+  count((CASE response WHEN 2 THEN response ELSE NULL END)) AS '2',
+  count((CASE response WHEN 3 THEN response ELSE NULL END)) AS '3',
+  count((CASE response WHEN 4 THEN response ELSE NULL END)) AS '4',
+  count((CASE response WHEN 5 THEN response ELSE NULL END)) AS '5',
+  count((CASE response WHEN 6 THEN response ELSE NULL END)) AS '6',
+  count((CASE response WHEN 7 THEN response ELSE NULL END)) AS '7',
+  count((CASE response WHEN 8 THEN response ELSE NULL END)) AS '8',
+  count((CASE response WHEN 9 THEN response ELSE NULL END)) AS '9',
+  count((CASE response WHEN 10 THEN response ELSE NULL END)) AS '10',
+  count((CASE response WHEN 'не було комунікації' THEN response ELSE NULL END)) AS 'не було комунікації'
+FROM results 
+where q = 'q11' and DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') in (SELECT max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) FROM results)
+GROUP BY 'К-ть оцінок в цілому'
+__________________________________________________
+
+
+select * from (SELECT replace(replace(question_id, SUBSTRING_INDEX(question_id,'_', -2), concat('(', SUBSTRING_INDEX(question_id,'_', -2), ')')),'_',' ') as 'Оцінка КЕРІВНИКА підрозділу головного офісу', round(sum(case when response = 'не було комунікації' then 0 else response end) / count(case when response <> 'не було комунікації' then  response end),1) as 'середній бал',
+concat(round((count(case when response in(1,2,3,4,5) then response end) / count(case when response <> 'не було комунікації' then  response end))*100,0),'%') as 'Частка оцінок нижче 5 балів включно',
+count(case when response <> 'не було комунікації' then  response end) as 'К-ть зарахованих оцінок',
+concat(round((count(case when response <> 'не було комунікації' then  response end) / count(response))*100,0),'%') as 'Частка зарахованих  оцінок від всіх голосувань',
+  count((CASE response WHEN 1 THEN response ELSE NULL END)) AS '1',
+  count((CASE response WHEN 2 THEN response ELSE NULL END)) AS '2',
+  count((CASE response WHEN 3 THEN response ELSE NULL END)) AS '3',
+  count((CASE response WHEN 4 THEN response ELSE NULL END)) AS '4',
+  count((CASE response WHEN 5 THEN response ELSE NULL END)) AS '5',
+  count((CASE response WHEN 6 THEN response ELSE NULL END)) AS '6',
+  count((CASE response WHEN 7 THEN response ELSE NULL END)) AS '7',
+  count((CASE response WHEN 8 THEN response ELSE NULL END)) AS '8',
+  count((CASE response WHEN 9 THEN response ELSE NULL END)) AS '9',
+  count((CASE response WHEN 10 THEN response ELSE NULL END)) AS '10',
+  count((CASE response WHEN 'не було комунікації' THEN response ELSE NULL END)) AS 'не було комунікації'
+FROM results 
+where q = 'q12' and DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') in (SELECT max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) FROM results)
+GROUP BY question_id
+order by 2
+) as Q
+
+union all
+
+SELECT 'К-ть оцінок в цілому' as 'К-ть оцінок в цілому', round(sum(case when response = 'не було комунікації' then 0 else response end) / count(case when response <> 'не було комунікації' then  response end),1) as total_avg_rank,
+concat(round((count(case when response in(1,2,3,4,5) then response end) / count(case when response <> 'не було комунікації' then  response end))*100,0),'%') as 'Частка оцінок нижче 5 балів включно',
+count(case when response <> 'не було комунікації' then  response end) as 'К-ть зарахованих оцінок',
+concat(round((count(case when response <> 'не було комунікації' then  response end) / count(response))*100,0),'%') as 'Частка зарахованих  оцінок від всіх голосувань',
+  count((CASE response WHEN 1 THEN response ELSE NULL END)) AS '1',
+  count((CASE response WHEN 2 THEN response ELSE NULL END)) AS '2',
+  count((CASE response WHEN 3 THEN response ELSE NULL END)) AS '3',
+  count((CASE response WHEN 4 THEN response ELSE NULL END)) AS '4',
+  count((CASE response WHEN 5 THEN response ELSE NULL END)) AS '5',
+  count((CASE response WHEN 6 THEN response ELSE NULL END)) AS '6',
+  count((CASE response WHEN 7 THEN response ELSE NULL END)) AS '7',
+  count((CASE response WHEN 8 THEN response ELSE NULL END)) AS '8',
+  count((CASE response WHEN 9 THEN response ELSE NULL END)) AS '9',
+  count((CASE response WHEN 10 THEN response ELSE NULL END)) AS '10',
+  count((CASE response WHEN 'не було комунікації' THEN response ELSE NULL END)) AS 'не було комунікації'
+FROM results 
+where q = 'q12' and DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') in (SELECT max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) FROM results)
+GROUP BY 'К-ть оцінок в цілому
+
