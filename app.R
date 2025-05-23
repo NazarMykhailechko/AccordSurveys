@@ -480,7 +480,7 @@ server <- function(input, output, session) {
     final_data <- subset(final_data, select = -subject_id)
     final_data$question_id <- gsub("'", "`", final_data$question_id)
     final_data$response <- gsub("'", "`", final_data$response)
-    View(final_data)
+    #View(final_data)
     #write.csv2(final_data,sep = ";",file = "d:/XML/111111111111111111111111.csv")
     
     ssql <- "INSERT INTO results_rb (question_id, response, date) "
