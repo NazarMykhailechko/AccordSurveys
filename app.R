@@ -18,13 +18,13 @@ library(DBI)
 #  password = "WIN72007@NAZAr"
 # )
 
- pool <- pool::dbPool(
-   drv = RMySQL::MySQL(),
-   dbname = "a9pt7elh5dx2d96q",
-   host = "fojvtycq53b2f2kx.chr7pe7iynqr.eu-west-1.rds.amazonaws.com",
-   username = "azpnhhninzjx64pg",
-   password = "uh8bfx0wuu4c44e5"
- )
+pool <- pool::dbPool(
+  drv = RMySQL::MySQL(),
+  dbname = "a9pt7elh5dx2d96q",
+  host = "fojvtycq53b2f2kx.chr7pe7iynqr.eu-west-1.rds.amazonaws.com",
+  username = "azpnhhninzjx64pg",
+  password = "uh8bfx0wuu4c44e5"
+)
 
 onStop(function() {
   print("POOL CLOSED!!!!!!!!!!!!!")
@@ -33,6 +33,8 @@ onStop(function() {
 
 questions <- data.frame(
   question = c( 
+    
+    rep("Виберіть регіонального директора",5),
     
     rep("Регіональний директор забезпечує чітку, своєчасну та відкриту комунікацію з Вами?",5),
     rep("Наскільки своєчасним та ефективним є зворотний зв’язок, який Ви отримуєте від регіонального директора?",5),
@@ -47,13 +49,21 @@ questions <- data.frame(
     rep("Наскільки дії та стиль управління регіонального директора мотивують Вас і Вашу команду до досягнення результатів?",5),
     rep("Чи враховується Ваша думка у процесі прийняття рішень на регіональному рівні?",5),
     rep("Чи траплялися ситуації, коли у спілкуванні з регіональним директором Ви відчували емоційний дискомфорт (наприклад, через тон спілкування, тиск, неприйнятні висловлювання чи порушення етичних норм)?",5),
-    rep("Що Ви вважаєте сильними сторонами регіонального директора?",1),
-    rep("Які напрями в його/її роботі, на Вашу думку, потребують покращення?",1),
+    rep("Що Ви вважаєте сильними сторонами регіонального директора? (максимум 1000 символів)",1),
+    rep("Які напрями в його/її роботі, на Вашу думку, потребують покращення?  (максимум 1000 символів)",1),
     rep("Як ви загалом оцінюєте роботу регіонального директора – з урахуванням його управлінських рішень, комунікації, підтримки, професіоналізму та внеску в розвиток відділення?",5)
     
   ),
   
   option = option <- c(
+    
+    "Гузар Ольга Олександрівна (Західний регіон)",
+    "Йолкін Євген Євгенович (Південно-Східний)",
+    "Парахнич Юрій Володимирович (Північно-Східний)",
+    "Халаїм Тетяна Михайлівна (Південниий регіон)",
+    "Ярмола Оксана Павлівна (Центральний регіон)",
+    
+    
     "1 - зовсім не забезпечує: інформація часто запізнюється, нечітка або відсутня",
     "2 – переважно ні: іноді інформує, але часто виникає плутанина або затримки у комунікації",
     "3 – частково забезпечує: іноді комунікація якісна, але не має стабільності",
@@ -130,8 +140,10 @@ questions <- data.frame(
   
   # For matrix questions, the IDs should be the same for each question
   # but different for each matrix input unit
-  input_type = c(rep("mc", 64),rep("text", 2),rep("mc", 5)),
+  input_type = c(rep("select", 5),rep("mc", 64),rep("text", 2),rep("mc", 5)),
   input_id = c(
+    
+    rep("manager",5),
     
     rep("q_11_Комунікація_та_підтримка-Регіональний директор забезпечує чітку, своєчасну та відкриту комунікацію з Вами?",5),
     rep("q_12_Комунікація_та_підтримка-Наскільки свєчасним та ефективним є зворотний зв’язок, який Ви отримуєте від регіонального директора?",5),
@@ -154,7 +166,7 @@ questions <- data.frame(
   ),
   dependence = NA,
   dependence_value = NA,
-  required = c(rep(TRUE, 71))
+  required = c(rep(TRUE, 76))
   #page = c(rep(1, 214), rep(2, 54), rep(3, 54), rep(4, 54))
 )
 
@@ -473,22 +485,33 @@ server <- function(input, output, session) {
     
     print("clicked save!!!")
     
+    #View(getSurveyData())
+    
     final_data <- getSurveyData()
+    final_data$id <-  round(as.numeric(Sys.time()))
     final_data$date <- Sys.Date()
+    final_data$manager <- input$manager
     
     final_data <- subset(final_data, select = -question_type)
     final_data <- subset(final_data, select = -subject_id)
     final_data$question_id <- gsub("'", "`", final_data$question_id)
     final_data$response <- gsub("'", "`", final_data$response)
+    
+    final_data <- final_data[final_data$question_id != "manager", ]
+    
+
+
+    #View(final_data)
+    
     #View(final_data)
     #write.csv2(final_data,sep = ";",file = "d:/XML/111111111111111111111111.csv")
     
-    ssql <- "INSERT INTO results_rb (question_id, response, date) "
+    ssql <- "INSERT INTO results_rb (id, manager, question_id, response, date) "
     
     for(i in 1:nrow(final_data)) {
-      data <- DBI::dbGetQuery(pool,  paste0(ssql,"VALUES('", final_data$question_id[i],"','", substr(final_data$response[i],1,1000), "','", final_data$date[i],"')"))
+      data <- DBI::dbGetQuery(pool,  paste0(ssql,"VALUES('", final_data$id[i],"','", final_data$manager[i],"','", final_data$question_id[i],"','", substr(trimws(final_data$response[i]),1,1000), "','", final_data$date[i],"')"))
       #data <- DBI::dbGetQuery(pool,  paste0(ssql,"VALUES('", questions$question[i],"','", questions$option[i], "','", Sys.Date(),"')"))
-      #print(paste0(ssql,"VALUES('", final_data$question_id[i],"','", final_data$response[i], "','", final_data$date[i],"')"))
+      #print(paste0(ssql,"VALUES('", final_data$manager[i],"','", final_data$question_id[i],"','", substr(final_data$response[i],1,1000), "','", final_data$date[i],"')"))
       }
     
   })

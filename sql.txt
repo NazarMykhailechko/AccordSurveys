@@ -6,6 +6,15 @@ CREATE TABLE results (
     date DATE NOT NULL    
 );
 
+use accordsurveys;
+CREATE TABLE results_rb (
+    id int unsigned not null,
+    manager varchar(47) NOT NULL,
+    question_id varchar(303) NOT NULL,
+    response varchar(1000) NOT NULL,  
+    date DATE NOT NULL    
+);
+
 SELECT question_id, AVG(response) AS AVG_Rank FROM results 
 where q in ('q11') and response not in ('не було комунікації')
 group by question_id;
@@ -106,3 +115,28 @@ FROM results
 where q = 'q12' and DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y') in (SELECT max(DATE_FORMAT(date + INTERVAL 1 MONTH, '01-%m-%Y')) FROM results)
 GROUP BY 'К-ть оцінок в цілому
 
+_________________________________________________
+
+select id, manager, 
+
+SUM(CASE q WHEN 'q_11' THEN ranks END) as 'q_11',
+SUM(CASE q WHEN 'q_12' THEN ranks END) as 'q_12',
+SUM(CASE q WHEN 'q_13' THEN ranks END) as 'q_13',
+SUM(CASE q WHEN 'q_14' THEN ranks END) as 'q_14',
+SUM(CASE q WHEN 'q_21' THEN ranks END) as 'q_21',
+SUM(CASE q WHEN 'q_22' THEN ranks END) as 'q_22',
+SUM(CASE q WHEN 'q_23' THEN ranks END) as 'q_23',
+SUM(CASE q WHEN 'q_31' THEN ranks END) as 'q_31',
+SUM(CASE q WHEN 'q_41' THEN ranks END) as 'q_41',
+SUM(CASE q WHEN 'q_42' THEN ranks END) as 'q_42',
+SUM(CASE q WHEN 'q_51' THEN ranks END) as 'q_51',
+SUM(CASE q WHEN 'q_52' THEN ranks END) as 'q_52',
+SUM(CASE q WHEN 'q_53' THEN ranks END) as 'q_53',
+max(CASE q WHEN 'q_61' THEN ranks END) as 'q_61',
+max(CASE q WHEN 'q_62' THEN ranks END) as 'q_62',
+SUM(CASE q WHEN 'q_63' THEN ranks END) as 'q_63'
+
+
+from (select *, (CASE WHEN q in('q_61','q_62') THEN response ELSE substr(response,1,1) END) as ranks 
+from (SELECT id, manager, question_id, substr(question_id,1,4) as q, response, date  FROM results_rb) AS QQ) AS QQQ
+group by id, manager
