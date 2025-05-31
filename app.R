@@ -9,6 +9,7 @@ library(RMySQL)
 library(pool)
 library(DBI)
 library(RJDBC)
+library(rJava)
 
 
 
