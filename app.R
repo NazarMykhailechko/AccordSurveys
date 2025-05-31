@@ -8,8 +8,8 @@ library(shinyWidgets)
 library(RMySQL)
 library(pool)
 library(DBI)
-library(RODBC)
-library(odbc)
+library(RJDBC)
+
 
 
 #pool <- pool::dbPool(
