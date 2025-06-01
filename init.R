@@ -3,7 +3,7 @@
 # Example R code to install packages if not already installed
 #
 
-my_packages = c("RODBC","shiny", "DT", "data.table", "reactable", "dplyr")
+my_packages = c("odbc", "DBI","RODBC","shiny", "DT", "data.table", "reactable", "dplyr")
 
 
 install_if_missing = function(p) {
