@@ -1,3 +1,4 @@
 https://github.com/heroku/heroku-buildpack-apt.git
 https://github.com/matt-bertoncello/python-pyodbc-buildpack.git
+https://github.com/iFix/heroku-buildpack-odbc.git
 https://github.com/virtualstaticvoid/heroku-buildpack-r.git
