@@ -1,4 +1,4 @@
 unixodbc
 unixodbc-dev
-msodbcsqlr17.rll
+libmsodbcsql-17.5.so.2.1
 pkg-config
