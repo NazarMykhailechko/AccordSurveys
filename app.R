@@ -28,7 +28,7 @@ server <- function(input, output) {
     #con <- odbcConnect("ne-az-sql-serv1.database.windows.net", uid="us1nj4boyvsubkt", pwd="oi#WOBSAHjqk4SkqXC?rsYyA$")
     #data <- RODBC::sqlQuery(con, "SELECT * FROM mycredentials")
     #on.exit(RODBC::odbcClose(con))
-    
+    print(con)
     #con <- RODBC::odbcDriverConnect('driver={SQL Server};server=DESKTOP-3D58FB2\\SQLEXPRESS;database=crmsystem;trusted_connection=true')
     data <- RODBC::sqlQuery(con, ssql)
   
