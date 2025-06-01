@@ -7,7 +7,7 @@ my_packages = c("RODBC","shiny", "DT", "data.table", "reactable", "dplyr")
 
 
 install_if_missing = function(p) {
-  if (p %in% rownames(installed.packages()) == FALSE) {
+  if (p %in% rownames(inSstalled.packages()) == FALSE) {
     install.packages(p)
   }
 }
