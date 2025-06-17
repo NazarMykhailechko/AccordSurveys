@@ -560,6 +560,9 @@ margin-bottom: 10.5px;font-size: 20px;} ")),
        tags$body(tags$style("#text1 {color:white;font-family: arial;font-size:10px;width: 70%}")),
        tags$body(tags$style("#text2 {color:white;font-family: arial;font-size:10px;width: 70%}")),
        tags$body(tags$style("#text3 {color:white;font-family: arial;width: 70%}")),
+       
+       # для зменншення відступу між рядками таблиці матриці оцінок
+       tags$body(tags$style("td {padding-top: 0 !important; padding-bottom: 0 !important;}")),
        #tags$body(tags$style("p #survey-description {font-size: 15px;}")),
        
        
