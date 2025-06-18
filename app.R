@@ -1135,6 +1135,14 @@ server <- function(input, output, session) {
       }
       
       
+      ip <- session$request$HTTP_X_FORWARDED_FOR
+      if (is.null(ip)) ip <- session$request$REMOTE_ADDR  # резервний варіант
+      
+      print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ",ip)
+      
+      #query <- "INSERT INTO ip_log (ip_address, timestamp) VALUES (?, NOW())"
+      #DBI::dbExecute(pool, query, params = list(ip))
+      #DBI::dbDisconnect(con)
       
       
       #print(paste0(ssql,"VALUES('", final_data$question_id,"','", final_data$response,"','", final_data$q, "','", final_data$date,"')"))
@@ -1152,6 +1160,8 @@ server <- function(input, output, session) {
     #}
     
     print("clicked save!!!")
+    
+    
     
 
     #ssql <- "INSERT INTO questionare (division, PIB, q11ker, q12ker, q13ker, q21ker, q22ker, q23ker, q31ker, q32ker, q33ker, q41ker, q42ker, q43ker) "
