@@ -1148,7 +1148,7 @@ server <- function(input, output, session) {
       
       
       print(query)
-      #DBI::dbExecute(pool, query)
+      DBI::dbExecute(pool, query)
       
       #DBI::dbDisconnect(con)
       
