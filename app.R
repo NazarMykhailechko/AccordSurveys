@@ -1139,8 +1139,9 @@ server <- function(input, output, session) {
       if (is.null(ip)) ip <- session$request$REMOTE_ADDR  # резервний варіант
       
       
-      query <- "INSERT INTO ip_log (ip_address, timestamp) VALUES (?, NOW())"
-      DBI::dbExecute(pool, query, params = list(ip))
+      query <- "INSERT INTO ip_log (ip_address, timestamp) VALUES (?, ?)"
+      DBI::dbExecute(pool, query, params = list(ip, Sys.time()))
+      
       #DBI::dbDisconnect(con)
       
       
