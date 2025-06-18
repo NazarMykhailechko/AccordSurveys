@@ -1144,7 +1144,7 @@ server <- function(input, output, session) {
       
       
       #query <- paste0("INSERT INTO ip_log (ip_address, timestamp) VALUES ('", ip,"','", Sys.time(),"')")
-      query <- paste0("INSERT INTO ip_log (stat, countryCode, region, regionName, city, zip, lat, lon, timezone, isp, org, aas, ip_address, timestamp) VALUES ('", ip_data$status,"','", ip_data$countryCode,"','", ip_data$region,"','", ip_data$regionName,"','", ip_data$zip,"','", ip_data$lat,"','", ip_data$lon,"','", ip_data$timezone,"','", ip_data$isp,"','", ip_data$org,"','", ip_data$as,"','", ip_data$query,"','", Sys.time(),"')")
+      query <- paste0("INSERT INTO ip_log (stat, countryCode, region, regionName, city, zip, lat, lon, timezone, isp, org, aas, ip_address, timestamp) VALUES ('", ip_data$status,"','", ip_data$countryCode,"','", ip_data$region,"','", ip_data$regionName,"','", ip_data$city,"','", ip_data$zip,"','", ip_data$lat,"','", ip_data$lon,"','", ip_data$timezone,"','", ip_data$isp,"','", ip_data$org,"','", ip_data$as,"','", ip_data$query,"','", Sys.time(),"')")
       
       
       print(query)
