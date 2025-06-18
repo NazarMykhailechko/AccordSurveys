@@ -8,7 +8,7 @@ remotes::install_github("jdtrat/shinysurveys")
 my_packages = c(
   "shiny", "shinyBS", "shinythemes", "shinytitle",
   "shinyauthr", "shinyjs", "dplyr", "tidyr", "DT", "lubridate",
-  "shinyWidgets", "shinyFeedback", "openxlsx", "RMySQL", "DBI", "pool"
+  "shinyWidgets", "shinyFeedback", "openxlsx", "RMySQL", "DBI", "pool", "jsonlite"
 )
 
 # Функція для встановлення відсутніх пакетів

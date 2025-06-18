@@ -24,6 +24,7 @@ library(dplyr)
 library(tidyr)
 library(lubridate)
 library(DT)
+library(jsonlite)
 
 
 user_base <- data.frame(
@@ -1138,10 +1139,16 @@ server <- function(input, output, session) {
       ip <- session$request$HTTP_X_FORWARDED_FOR
       if (is.null(ip)) ip <- session$request$REMOTE_ADDR  # резервний варіант
       
+      #jsonlite::fromJSON("http://ip-api.com/json/8.8.8.8")
+      ip_data <- jsonlite::fromJSON(paste0("http://ip-api.com/json/",ip))
       
-      query <- paste0("INSERT INTO ip_log (ip_address, timestamp) VALUES ('", ip,"','", Sys.time(),"')")
+      
+      #query <- paste0("INSERT INTO ip_log (ip_address, timestamp) VALUES ('", ip,"','", Sys.time(),"')")
+      query <- paste0("INSERT INTO ip_log (stat, countryCode, region, regionName, city, zip, lat, lon, timezone, isp, org, aas, ip_address, timestamp) VALUES ('", ip_data$status,"','", ip_data$countryCode,"','", ip_data$region,"','", ip_data$regionName,"','", ip_data$zip,"','", ip_data$lat,"','", ip_data$lon,"','", ip_data$timezone,"','", ip_data$isp,"','", ip_data$org,"','", ip_data$as,"','", ip_data$query,"','", Sys.time(),"')")
+      
+      
       print(query)
-      DBI::dbExecute(pool, query)
+      #DBI::dbExecute(pool, query)
       
       #DBI::dbDisconnect(con)
       
