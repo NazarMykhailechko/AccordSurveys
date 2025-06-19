@@ -25,7 +25,6 @@ library(tidyr)
 library(lubridate)
 library(DT)
 library(jsonlite)
-library(leaflet)
 
 
 
