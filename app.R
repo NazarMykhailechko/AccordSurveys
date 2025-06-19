@@ -28,11 +28,11 @@ library(jsonlite)
 
 
 
-custom_icon <- makeIcon(
-  iconUrl = "Accord_logos.png",
-  iconWidth = 25, iconHeight = 25,
-  iconAnchorX = 25, iconAnchorY = 32
-)
+#custom_icon <- makeIcon(
+#  iconUrl = "Accord_logos.png",
+#  iconWidth = 25, iconHeight = 25,
+#  iconAnchorX = 25, iconAnchorY = 32
+#)
 
 
 
