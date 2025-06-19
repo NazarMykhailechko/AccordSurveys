@@ -26,6 +26,9 @@ library(lubridate)
 library(DT)
 library(jsonlite)
 library(leaflet)
+library(terra)
+library(raster)
+library(sf)
 
 
 custom_icon <- makeIcon(
