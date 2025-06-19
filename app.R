@@ -26,9 +26,7 @@ library(lubridate)
 library(DT)
 library(jsonlite)
 library(leaflet)
-library(terra)
-library(raster)
-library(sf)
+
 
 
 custom_icon <- makeIcon(
@@ -725,9 +723,9 @@ background-color:#4e5d6c;
             textOutput("text10", container = span),
             br(),
             dataTableOutput("total_stat9"),
-            br(),
+            br()
             
-            leafletOutput("user_map", height = "600px")
+            #leafletOutput("user_map", height = "600px")
             
             
 
@@ -1763,17 +1761,17 @@ GROUP BY 'К-ть оцінок в цілому'
         })
         
         
-        data14 <- reactive({
-          data14 = dbGetQuery(pool, paste0("select * from ip_log"))
-          return(data14)
-        })
+      #  data14 <- reactive({
+      #    data14 = dbGetQuery(pool, paste0("select * from ip_log"))
+      #    return(data14)
+      #  })
         
         
-        data15 <- reactive({
-          df <- read_json("data.json")
-          data15 <- do.call(rbind.data.frame, df)
-          return(data15)
-        })
+      #  data15 <- reactive({
+      #    df <- read_json("data.json")
+      #    data15 <- do.call(rbind.data.frame, df)
+      #    return(data15)
+      #  })
         
         
       output$total_stat1 <- renderDataTable({
@@ -2040,20 +2038,20 @@ GROUP BY 'К-ть оцінок в цілому'
       
       
       
-      output$user_map <- renderLeaflet({
-        leaflet() |>
-          addTiles() |>
-          addCircleMarkers(data = data14(),
-            lng = ~as.numeric(lon), lat = ~as.numeric(lat),
-            popup = ~paste0("<b>", city, ", ", countryCode, ", ", isp ,", ", org ,"</b><br>IP: ", ip_address),
-            color = "blue"
-          )|>
-          addMarkers(data = data15(),
-            lng = ~as.numeric(lng), lat = ~as.numeric(lat),
-            popup = ~paste0("<b>", title, ", ", address, ", ", worktime ,", ", pointinfo ,"</b><br>"),
-            icon = custom_icon
-          )
-      })
+     # output$user_map <- renderLeaflet({
+      #  leaflet() |>
+      #    addTiles() |>
+      #    addCircleMarkers(data = data14(),
+      #      lng = ~as.numeric(lon), lat = ~as.numeric(lat),
+      #      popup = ~paste0("<b>", city, ", ", countryCode, ", ", isp ,", ", org ,"</b><br>IP: ", ip_address),
+      #      color = "blue"
+      #    )|>
+      #    addMarkers(data = data15(),
+      #      lng = ~as.numeric(lng), lat = ~as.numeric(lat),
+      #      popup = ~paste0("<b>", title, ", ", address, ", ", worktime ,", ", pointinfo ,"</b><br>"),
+      #      icon = custom_icon
+      #    )
+      #})
       
       
       

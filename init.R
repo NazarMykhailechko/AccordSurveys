@@ -3,14 +3,13 @@ if (!requireNamespace("remotes")) install.packages("remotes")
 
 # Встановлення shinysurveys з GitHub (офіційний репозиторій)
 remotes::install_github("jdtrat/shinysurveys")
-remotes::install_github("rstudio/leaflet")
 
 
 # Список інших пакетів (без shinysurveys)
 my_packages = c(
   "shiny", "shinyBS", "shinythemes", "shinytitle",
   "shinyauthr", "shinyjs", "dplyr", "tidyr", "DT", "lubridate",
-  "shinyWidgets", "shinyFeedback", "openxlsx", "RMySQL", "DBI", "pool", "jsonlite","raster","terra","sf")
+  "shinyWidgets", "shinyFeedback", "openxlsx", "RMySQL", "DBI", "pool", "jsonlite")
 
 # Функція для встановлення відсутніх пакетів
 install_if_missing = function(p) {
