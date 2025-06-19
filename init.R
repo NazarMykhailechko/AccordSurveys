@@ -3,7 +3,7 @@ if (!requireNamespace("remotes")) install.packages("remotes")
 
 # Встановлення shinysurveys з GitHub (офіційний репозиторій)
 remotes::install_github("jdtrat/shinysurveys")
-remotes::install_github("rstudio/leaflet", dependencies = FALSE)
+remotes::install_github("rstudio/leaflet")
 
 
 # Список інших пакетів (без shinysurveys)
