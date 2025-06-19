@@ -25,6 +25,15 @@ library(tidyr)
 library(lubridate)
 library(DT)
 library(jsonlite)
+library(leaflet)
+
+
+custom_icon <- makeIcon(
+  iconUrl = "Accord_logos.png",
+  iconWidth = 25, iconHeight = 25,
+  iconAnchorX = 25, iconAnchorY = 32
+)
+
 
 
 user_base <- data.frame(
@@ -35,6 +44,7 @@ user_base <- data.frame(
   stringsAsFactors = FALSE,
   row.names = NULL
 )
+
 
 
   #pool <- pool::dbPool(
@@ -712,7 +722,10 @@ background-color:#4e5d6c;
             textOutput("text10", container = span),
             br(),
             dataTableOutput("total_stat9"),
-            br()
+            br(),
+            
+            leafletOutput("user_map", height = "600px")
+            
             
 
             #dataTableOutput("count_last"),
@@ -1075,10 +1088,31 @@ server <- function(input, output, session) {
       #print(getSurveyData())
       
       #print(input$q10)
+      
+      
+      
+      ip <- session$request$HTTP_X_FORWARDED_FOR
+      if (is.null(ip)) ip <- session$request$REMOTE_ADDR  # резервний варіант
+      
+      #jsonlite::fromJSON("http://ip-api.com/json/8.8.8.8")
+      ip_data <- jsonlite::fromJSON(paste0("http://ip-api.com/json/",ip))
+      
+      
+      #query <- paste0("INSERT INTO ip_log (ip_address, timestamp) VALUES ('", ip,"','", Sys.time(),"')")
+      query <- paste0("INSERT INTO ip_log (stat, countryCode, region, regionName, city, zip, lat, lon, timezone, isp, org, aas, ip_address, timestamp) VALUES ('", ip_data$status,"','", ip_data$countryCode,"','", ip_data$region,"','", ip_data$regionName,"','", ip_data$city,"','", ip_data$zip,"','", ip_data$lat,"','", ip_data$lon,"','", ip_data$timezone,"','", ip_data$isp,"','", ip_data$org,"','", ip_data$as,"','", ip_data$query,"','", Sys.time(),"')")
+      
+      
+      print(query)
+      DBI::dbExecute(pool, query)
+      
+      id_ip <- DBI::dbGetQuery(pool, "SELECT LAST_INSERT_ID()")[[1]]
+      
+      
 
       question_id <- c("1. Що, на вашу думку, потребує покращення у їх роботі?", "2. Чи стикалися ви з проявами зверхності, грубості, ігнорування або емоційного тиску з боку керівника підрозділу?")
       question_type <- c("text", "text")
       response <- c(input$q10, input$q11)
+      
       q <- c("q10", "q11")
       # Creating a dataframe
       df <- data.frame(question_id = question_id, question_type = question_type, response = response, q = q)
@@ -1124,31 +1158,20 @@ server <- function(input, output, session) {
 
       final_data <- bind_rows(q1, q2, q3, q4, q5, q6, q7, q8, q9, df)
       final_data$date <- Sys.Date()
+      final_data$id <- id_ip
       
       final_data <- subset(final_data, select = -question_type)
       
       #print(final_data)
       
-      ssql <- "INSERT INTO results (question_id, response, q, date) "
+      ssql <- "INSERT INTO results (question_id, response, q, date, id) "
 
       for(i in 1:nrow(final_data)) {
-        data <- DBI::dbGetQuery(pool,  paste0(ssql,"VALUES('", final_data$question_id[i],"','", substr(trimws(final_data$response[i]),1,1000),"','", final_data$q[i], "','", final_data$date[i],"')"))
+        data <- DBI::dbGetQuery(pool,  paste0(ssql,"VALUES('", final_data$question_id[i],"','", substr(trimws(final_data$response[i]),1,1000),"','", final_data$q[i], "','", final_data$date[i], "','", final_data$id[i],"')"))
       }
       
       
-      ip <- session$request$HTTP_X_FORWARDED_FOR
-      if (is.null(ip)) ip <- session$request$REMOTE_ADDR  # резервний варіант
-      
-      #jsonlite::fromJSON("http://ip-api.com/json/8.8.8.8")
-      ip_data <- jsonlite::fromJSON(paste0("http://ip-api.com/json/",ip))
-      
-      
-      #query <- paste0("INSERT INTO ip_log (ip_address, timestamp) VALUES ('", ip,"','", Sys.time(),"')")
-      query <- paste0("INSERT INTO ip_log (stat, countryCode, region, regionName, city, zip, lat, lon, timezone, isp, org, aas, ip_address, timestamp) VALUES ('", ip_data$status,"','", ip_data$countryCode,"','", ip_data$region,"','", ip_data$regionName,"','", ip_data$city,"','", ip_data$zip,"','", ip_data$lat,"','", ip_data$lon,"','", ip_data$timezone,"','", ip_data$isp,"','", ip_data$org,"','", ip_data$as,"','", ip_data$query,"','", Sys.time(),"')")
-      
-      
-      print(query)
-      DBI::dbExecute(pool, query)
+
       
       #DBI::dbDisconnect(con)
       
@@ -1736,6 +1759,20 @@ GROUP BY 'К-ть оцінок в цілому'
           return(data13)
         })
         
+        
+        data14 <- reactive({
+          data14 = dbGetQuery(pool, paste0("select * from ip_log"))
+          return(data14)
+        })
+        
+        
+        data15 <- reactive({
+          df <- read_json("data.json")
+          data15 <- do.call(rbind.data.frame, df)
+          return(data15)
+        })
+        
+        
       output$total_stat1 <- renderDataTable({
         #selectize-input items full has-options has-items
         datatable(
@@ -1996,6 +2033,25 @@ GROUP BY 'К-ть оцінок в цілому'
           
         )}
       )
+      
+      
+      
+      
+      output$user_map <- renderLeaflet({
+        leaflet() |>
+          addTiles() |>
+          addCircleMarkers(data = data14(),
+            lng = ~as.numeric(lon), lat = ~as.numeric(lat),
+            popup = ~paste0("<b>", city, ", ", countryCode, ", ", isp ,", ", org ,"</b><br>IP: ", ip_address),
+            color = "blue"
+          )|>
+          addMarkers(data = data15(),
+            lng = ~as.numeric(lng), lat = ~as.numeric(lat),
+            popup = ~paste0("<b>", title, ", ", address, ", ", worktime ,", ", pointinfo ,"</b><br>"),
+            icon = custom_icon
+          )
+      })
+      
       
       
     }
